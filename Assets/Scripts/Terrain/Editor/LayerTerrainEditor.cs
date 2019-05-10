@@ -1,14 +1,15 @@
-﻿using System.Collections;
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
+
 using SimTerrain;
 
-[CustomEditor(typeof(LayerTerrain))]
+using UnityEditor;
+
+using UnityEngine;
+[CustomEditor (typeof (LayerTerrain))]
 public class LayerTerrainEditor : Editor
 {
-
     private SerializedObject obj;
     [HideInInspector]
     static public LayerTerrain targetObject;
@@ -17,24 +18,19 @@ public class LayerTerrainEditor : Editor
     static public SerializedProperty terrainMatiera;
     private SerializedObject DataRefObject;
     private SerializedProperty colors;
-
     private LayerTerrainGroups groupsRefObject;
     private SerializedProperty groups;
-
     bool hasConfige = false;
-
     private int GroupSelectIndex = 0;
-    private GUIContent[] icons = new GUIContent[3];
-    private GUIContent[] Brushicons = new GUIContent[4];
+    private GUIContent[ ] icons = new GUIContent[3];
+    private GUIContent[ ] Brushicons = new GUIContent[4];
     private GUIContent delIcon;
     private GUIContent addIcon;
     private GUIContent refreshIcon;
     private GUIContent savaIcon;
-    private string[] iconpath = new string[] { "TerrainInspector.TerrainToolSetHeight", "PreTextureRGB", "SettingsIcon" };
-
-    private string[] Brushiconpath = new string[] { "TerrainInspector.TerrainToolRaise", "TerrainInspector.TerrainToolSmoothHeight", "ClothInspector.PaintValue","animationvisibilitytoggleon" };
-    private Action[] groupsActions = new Action[3];
-
+    private string[ ] iconpath = new string[ ] { "TerrainInspector.TerrainToolSetHeight", "PreTextureRGB", "SettingsIcon" };
+    private string[ ] Brushiconpath = new string[ ] { "TerrainInspector.TerrainToolRaise", "TerrainInspector.TerrainToolSmoothHeight", "ClothInspector.PaintValue", "animationvisibilitytoggleon" };
+    private Action[ ] groupsActions = new Action[3];
     /*enum PageIndex
     {
         BRUSH   = 0,
@@ -51,242 +47,203 @@ public class LayerTerrainEditor : Editor
     private float BrushSize = 5;
     static private float BrushOpactiy = 0;
     private float BrushStrenght = 5.0f;
-
     //Blur
     private float BlurRadius = 10.0f;
     private float BlurPower = 1.0f;
-    private void OnEnable()
+    private void OnEnable ( )
     {
         //Debug.Log("OnEnable");
-
         targetObject = target as LayerTerrain;
-        obj = new SerializedObject(target);
-        DataFile = obj.FindProperty("configObject");
-        terrainMatiera = obj.FindProperty("terrainMatrial");
-        BrushSelectIndex =(int) targetObject.brush.brushType;
+        obj = new SerializedObject (target);
+        DataFile = obj.FindProperty ("configObject");
+        terrainMatiera = obj.FindProperty ("terrainMatrial");
+        BrushSelectIndex = (int) targetObject.brush.brushType;
         BrushSize = targetObject.brush.Radius;
         BrushOpactiy = targetObject.brush.Targetheight;
         BrushStrenght = targetObject.brush.Strenght;
         BlurRadius = targetObject.brush.BlurRadius;
         BlurPower = targetObject.brush.BlurPower;
-        SceneView.onSceneGUIDelegate += OnSceneGUI;
-
+        SceneView.duringSceneGui += OnSceneGUI;
         for (int idx = 0; idx < iconpath.Length; ++idx)
         {
-            icons[idx] = EditorGUIUtility.IconContent(iconpath[idx]);
+            icons[idx] = EditorGUIUtility.IconContent (iconpath[idx]);
         }
-
         for (int idx = 0; idx < Brushiconpath.Length; ++idx)
         {
-            Brushicons[idx] = EditorGUIUtility.IconContent(Brushiconpath[idx]);
+            Brushicons[idx] = EditorGUIUtility.IconContent (Brushiconpath[idx]);
         }
-
         groupsActions[0] = DrawBrushGroup;
         groupsActions[1] = DrawColorGroup;
         groupsActions[2] = DrawSettingGroup;
-        delIcon = EditorGUIUtility.IconContent("TreeEditor.Trash");
-        addIcon = EditorGUIUtility.IconContent("Toolbar Plus");
-        refreshIcon = EditorGUIUtility.IconContent("TreeEditor.Refresh");
-        savaIcon = EditorGUIUtility.IconContent("BuildSettings.SelectedIcon");
+        delIcon = EditorGUIUtility.IconContent ("TreeEditor.Trash");
+        addIcon = EditorGUIUtility.IconContent ("Toolbar Plus");
+        refreshIcon = EditorGUIUtility.IconContent ("TreeEditor.Refresh");
+        savaIcon = EditorGUIUtility.IconContent ("BuildSettings.SelectedIcon");
     }
-
-    private void OnDisable()
+    private void OnDisable ( )
     {
         //Debug.Log("OnDisable");
-        SceneView.onSceneGUIDelegate -= OnSceneGUI;
+        SceneView.duringSceneGui -= OnSceneGUI;
     }
-    override public void OnInspectorGUI()
+    override public void OnInspectorGUI ( )
     {
-        
-        EditorGUILayout.BeginVertical();
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
-        EditorGUILayout.EndVertical();
-
-        EditorGUI.BeginChangeCheck();
-        EditorGUILayout.PropertyField(DataFile);
+        EditorGUILayout.BeginVertical ( );
+        EditorGUILayout.Space ( );
+        EditorGUILayout.Space ( );
+        EditorGUILayout.EndVertical ( );
+        EditorGUI.BeginChangeCheck ( );
+        EditorGUILayout.PropertyField (DataFile);
         if (DataFile != null)
         {
             hasConfige = DataFile.objectReferenceValue != null;
             if (hasConfige)
             {
-                DataRefObject = new SerializedObject(DataFile.objectReferenceValue);
+                DataRefObject = new SerializedObject (DataFile.objectReferenceValue);
                 LayerTerrainObject TerrainObject = DataFile.objectReferenceValue as LayerTerrainObject;
                 objRef = TerrainObject;
                 groupsRefObject = TerrainObject.GetGroups;
-                colors = DataRefObject.FindProperty("Colors");
+                colors = DataRefObject.FindProperty ("Colors");
             }
         }
         if (!hasConfige) return;
-        EditorGUILayout.PropertyField(terrainMatiera);
-        GroupSelectIndex = GUILayout.Toolbar(GroupSelectIndex, icons, EditorStyles.toolbarButton);
-        drawGroup(GroupSelectIndex);
-        if (GUILayout.Button(refreshIcon))
+        EditorGUILayout.PropertyField (terrainMatiera);
+        GroupSelectIndex = GUILayout.Toolbar (GroupSelectIndex, icons, EditorStyles.toolbarButton);
+        drawGroup (GroupSelectIndex);
+        if (GUILayout.Button (refreshIcon))
         {
-            targetObject.Refresh();
-
+            targetObject.Refresh ( );
         }
-
-        if (GUILayout.Button(savaIcon))
+        if (GUILayout.Button (savaIcon))
         {
-            targetObject.saveData();
-            EditorUtility.SetDirty(DataFile.objectReferenceValue);
+            targetObject.saveData ( );
+            EditorUtility.SetDirty (DataFile.objectReferenceValue);
         }
-        if (EditorGUI.EndChangeCheck())
+        if (EditorGUI.EndChangeCheck ( ))
         {
-            obj.ApplyModifiedProperties();
+            obj.ApplyModifiedProperties ( );
         }
     }
-
-    private void drawGroup(int idx)
+    private void drawGroup (int idx)
     {
         //for()
-       // page = (PageIndex)idx;
-        groupsActions[idx].Invoke();
+        // page = (PageIndex)idx;
+        groupsActions[idx].Invoke ( );
     }
-
-    private void DrawBrushGroup()
+    private void DrawBrushGroup ( )
     {
-        EditorGUILayout.BeginVertical();
-        GUILayout.Label("Brush");
-        EditorGUI.BeginChangeCheck();
-        BrushSelectIndex = GUILayout.Toolbar(BrushSelectIndex, Brushicons, EditorStyles.toolbarButton);
-
-        BrushSize = EditorGUILayout.Slider("Brush Size",BrushSize, 0, 20);
-        BrushOpactiy = (float)EditorGUILayout.IntSlider("TargetHeight", (int)BrushOpactiy, 1, 32);
-        BrushStrenght = EditorGUILayout.Slider("Strength", BrushStrenght, 0.0f, 1.0f);
-
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
-
-        BlurRadius = EditorGUILayout.Slider("BlurRadius", BlurRadius, 0.0f, 10.0f);
-        BlurPower = EditorGUILayout.Slider("BlurPower", BlurPower, -2.0f, 2.0f);
-
-        if (EditorGUI.EndChangeCheck())
+        EditorGUILayout.BeginVertical ( );
+        GUILayout.Label ("Brush");
+        EditorGUI.BeginChangeCheck ( );
+        BrushSelectIndex = GUILayout.Toolbar (BrushSelectIndex, Brushicons, EditorStyles.toolbarButton);
+        BrushSize = EditorGUILayout.Slider ("Brush Size", BrushSize, 0, 20);
+        BrushOpactiy = (float) EditorGUILayout.IntSlider ("TargetHeight", (int) BrushOpactiy, 1, 32);
+        BrushStrenght = EditorGUILayout.Slider ("Strength", BrushStrenght, 0.0f, 1.0f);
+        EditorGUILayout.Space ( );
+        EditorGUILayout.Space ( );
+        EditorGUILayout.Space ( );
+        BlurRadius = EditorGUILayout.Slider ("BlurRadius", BlurRadius, 0.0f, 10.0f);
+        BlurPower = EditorGUILayout.Slider ("BlurPower", BlurPower, -2.0f, 2.0f);
+        if (EditorGUI.EndChangeCheck ( ))
         {
             targetObject.brush.Radius = BrushSize;
             targetObject.brush.Targetheight = BrushOpactiy;
             targetObject.brush.Strenght = BrushStrenght;
             targetObject.brush.BlurRadius = BlurRadius;
             targetObject.brush.BlurPower = BlurPower;
-            targetObject.brush.brushType = (TerrainBrush.BrushType)BrushSelectIndex;
+            targetObject.brush.brushType = (TerrainBrush.BrushType) BrushSelectIndex;
         }
-
-        EditorGUILayout.EndVertical();
+        EditorGUILayout.EndVertical ( );
     }
-
-    private void DrawColorGroup()
+    private void DrawColorGroup ( )
     {
-        if(DataRefObject != null)
+        if (DataRefObject != null)
         {
-            DataRefObject.Update();
+            DataRefObject.Update ( );
         }
-        
-        EditorGUILayout.BeginVertical();
-        GUILayout.Label("Colors");
-        EditorGUI.BeginChangeCheck();
-
-        if (colors != null )
+        EditorGUILayout.BeginVertical ( );
+        GUILayout.Label ("Colors");
+        EditorGUI.BeginChangeCheck ( );
+        if (colors != null)
         {
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(colors, true);
-            if (EditorGUI.EndChangeCheck())
+            EditorGUI.BeginChangeCheck ( );
+            EditorGUILayout.PropertyField (colors, true);
+            if (EditorGUI.EndChangeCheck ( ))
             {
                 //Debug.Log("Change Colors");
-                targetObject.Refresh();
+                targetObject.Refresh ( );
             }
             //EditorGUILayout.PropertyField(bottomColor);
         }
-
-        if (EditorGUI.EndChangeCheck() && DataRefObject != null)
+        if (EditorGUI.EndChangeCheck ( ) && DataRefObject != null)
         {
-            DataRefObject.ApplyModifiedProperties();
+            DataRefObject.ApplyModifiedProperties ( );
         }
-     
-        EditorGUILayout.EndVertical();
+        EditorGUILayout.EndVertical ( );
     }
-
-    private void DrawSettingGroup()
+    private void DrawSettingGroup ( )
     {
-        EditorGUILayout.BeginVertical();
-        GUILayout.Label("Setting");
-  
-        groupsRefObject.chunk.ChunkLenght = EditorGUILayout.IntField("Chunk Lenght",groupsRefObject.chunk.ChunkLenght);
-
-        groupsRefObject.chunk.ChunkWidth = EditorGUILayout.IntField("Chunk Width", groupsRefObject.chunk.ChunkWidth);
-
-        groupsRefObject.chunk.uvReslution = EditorGUILayout.Vector2Field("UV Reslution", groupsRefObject.chunk.uvReslution);
-
-        groupsRefObject.chunk.LayerHeight = EditorGUILayout.FloatField("Layer Height", groupsRefObject.chunk.LayerHeight);
-
+        EditorGUILayout.BeginVertical ( );
+        GUILayout.Label ("Setting");
+        groupsRefObject.chunk.ChunkLenght = EditorGUILayout.IntField ("Chunk Lenght", groupsRefObject.chunk.ChunkLenght);
+        groupsRefObject.chunk.ChunkWidth = EditorGUILayout.IntField ("Chunk Width", groupsRefObject.chunk.ChunkWidth);
+        groupsRefObject.chunk.uvReslution = EditorGUILayout.Vector2Field ("UV Reslution", groupsRefObject.chunk.uvReslution);
+        groupsRefObject.chunk.LayerHeight = EditorGUILayout.FloatField ("Layer Height", groupsRefObject.chunk.LayerHeight);
         for (int idx = 0; idx < groupsRefObject.datas.Count; ++idx)
         {
-            EditorGUILayout.LabelField("--------------------------------------------------------------------------------------------");
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
-            GUILayout.Label("Index:" + idx.ToString());
+            EditorGUILayout.LabelField ("--------------------------------------------------------------------------------------------");
+            EditorGUILayout.Space ( );
+            EditorGUILayout.Space ( );
+            GUILayout.Label ("Index:" + idx.ToString ( ));
             TerrainFile FileRef = groupsRefObject.datas[idx];
-            EditorGUI.BeginChangeCheck();
-            FileRef.name = EditorGUILayout.TextField("name", FileRef.name);
-            FileRef.terrainWidth = EditorGUILayout.IntField("TerrainWidth", FileRef.terrainWidth);
-            FileRef.terrainLength = EditorGUILayout.IntField("TerrainLenght", FileRef.terrainLength);
-            if (EditorGUI.EndChangeCheck())
+            EditorGUI.BeginChangeCheck ( );
+            FileRef.name = EditorGUILayout.TextField ("name", FileRef.name);
+            FileRef.terrainWidth = EditorGUILayout.IntField ("TerrainWidth", FileRef.terrainWidth);
+            FileRef.terrainLength = EditorGUILayout.IntField ("TerrainLenght", FileRef.terrainLength);
+            if (EditorGUI.EndChangeCheck ( ))
             {
-                EditorGUILayout.HelpBox("修改尺寸，会重置地图数据", MessageType.Warning,true);
+                EditorGUILayout.HelpBox ("修改尺寸，会重置地图数据", MessageType.Warning, true);
             }
-            FileRef.worldPositon = EditorGUILayout.Vector3Field("worldPositon", FileRef.worldPositon);
-            FileRef.worldSize = EditorGUILayout.Vector3Field("worldSize", FileRef.worldSize);
+            FileRef.worldPositon = EditorGUILayout.Vector3Field ("worldPositon", FileRef.worldPositon);
+            FileRef.worldSize = EditorGUILayout.Vector3Field ("worldSize", FileRef.worldSize);
         }
-        EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button(delIcon))
+        EditorGUILayout.BeginHorizontal ( );
+        if (GUILayout.Button (delIcon))
         {
             if (groupsRefObject.datas.Count <= 0)
                 return;
-            DelGroupWindows.OpenWindow(groupsRefObject.datas);
-           
+            DelGroupWindows.OpenWindow (groupsRefObject.datas);
         }
-
-        if (GUILayout.Button(addIcon))
+        if (GUILayout.Button (addIcon))
         {
-            AddGroupWindows.OpenWindow(objRef, groupsRefObject.datas);
+            AddGroupWindows.OpenWindow (objRef, groupsRefObject.datas);
         }
-
-
-        EditorGUILayout.EndHorizontal();
-        EditorGUILayout.EndVertical();
+        EditorGUILayout.EndHorizontal ( );
+        EditorGUILayout.EndVertical ( );
     }
-
-    static void OnSceneGUI(SceneView sceneView)
+    static void OnSceneGUI (SceneView sceneView)
     {
         //if (page != PageIndex.BRUSH) return;
-
         Event e = Event.current;
         Vector2 mousePosition = e.mousePosition;
-
         // View point to world point translation function in my game.
         //this._mousePosition = SceneScreenToWorldPoint(mousePosition);
-
         // Block SceneView's built-in behavior
-        HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
-
+        HandleUtility.AddDefaultControl (GUIUtility.GetControlID (FocusType.Passive));
         bool HandleMsg = false;
-         if (e.isMouse)
+        if (e.isMouse)
         {
             // Debug.Log(e.button.ToString() + ":"+ e.type.ToString());
         }
-        if(e.button == 0 && e.type == EventType.MouseDown)
+        if (e.button == 0 && e.type == EventType.MouseDown)
         {
             HandleMsg = false;
-            RaycastHit hit;
-            Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-
-            int terrainMask = LayerMask.NameToLayer("Terrain");
+            // RaycastHit hit;
+            Ray ray = HandleUtility.GUIPointToWorldRay (Event.current.mousePosition);
+            int terrainMask = LayerMask.NameToLayer ("Terrain");
             int layerIndex = 0;
-            if (targetObject.TouchInTerrain(ray, out layerIndex))
+            if (targetObject.TouchInTerrain (ray, out layerIndex))
             {
-                targetObject.BrushTerrainBegin();
-
+                targetObject.BrushTerrainBegin ( );
                 if ((targetObject.brush.brushType) == TerrainBrush.BrushType.VIEW)
                 {
                     targetObject.brush.Targetheight = layerIndex;
@@ -300,33 +257,28 @@ public class LayerTerrainEditor : Editor
                 }
                 else
                 {
-                     IsMouseDown = true;
+                    IsMouseDown = true;
                 }
-               
             }
         }
-
         if (e.button == 0 && e.type == EventType.MouseDrag && IsMouseDown)
         {
             HandleMsg = true;
-            RaycastHit hit;
-            Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-            targetObject.BrushTerrain(ray);
+            // RaycastHit hit;
+            Ray ray = HandleUtility.GUIPointToWorldRay (Event.current.mousePosition);
+            targetObject.BrushTerrain (ray);
             IsMouseDrage = true;
         }
-
         if (e.button == 0 && e.type == EventType.MouseUp)
         {
             IsMouseDown = false;
             if (IsMouseDrage)
             {
-                targetObject.BrushTerrainEnd();
+                targetObject.BrushTerrainEnd ( );
                 IsMouseDrage = false;
             }
             HandleMsg = true;
-            
         }
-
         /*if(e.control && e.keyCode == KeyCode.S)
         {
             if(DataFile != null)
@@ -340,12 +292,10 @@ public class LayerTerrainEditor : Editor
         // ------------------------------
         // Your Custom OnGUI Logic
         // ------------------------------
- 
         if (HandleMsg == true)
         {
-            if (Event.current.type == EventType.MouseDown) Event.current.Use();
-            if (Event.current.type == EventType.MouseMove) Event.current.Use();
+            if (Event.current.type == EventType.MouseDown) Event.current.Use ( );
+            if (Event.current.type == EventType.MouseMove) Event.current.Use ( );
         }
-
     }
 }
